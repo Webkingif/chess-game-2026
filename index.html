@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grandmaster AI Chess - Vanilla</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="app-container">
+        <div class="main-layout">
+            <!-- Left Column: Board -->
+            <div class="board-column">
+                <div id="board" class="board"></div>
+                
+                <!-- Game Status Bar -->
+                <div class="status-bar">
+                    <div class="turn-indicator">
+                        <div id="turn-dot" class="dot white"></div>
+                        <span id="status-text">White's Turn</span>
+                    </div>
+                    <div class="controls">
+                        <button id="undo-btn" title="Undo Move">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+                        </button>
+                        <button id="reset-btn" title="New Game">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Sidebar -->
+            <div class="sidebar">
+                <!-- AI Settings -->
+                <div class="card">
+                    <div class="card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-10 10c0 4.99 3.3 9.21 8 10.61V16a2 2 0 0 0-2-2 4 4 0 0 1-4-4 4 4 0 0 1 4-4 2 2 0 0 0 2-2V2Z"/><path d="M12 2a10 10 0 0 1 10 10c0 4.99-3.3 9.21-8 10.61V16a2 2 0 0 1 2-2 4 4 0 0 0 4-4 4 4 0 0 0-4-4 2 2 0 0 1-2-2V2Z"/></svg>
+                        <h2>Engine Settings</h2>
+                    </div>
+                    <div class="settings-group">
+                        <label class="label">Difficulty (Depth)</label>
+                        <div class="button-grid" id="difficulty-btns">
+                            <button data-depth="2">Easy</button>
+                            <button data-depth="3" class="active">Med</button>
+                            <button data-depth="4">Hard</button>
+                            <button data-depth="5">Pro</button>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <label class="label">Play As</label>
+                        <div class="button-flex" id="color-btns">
+                            <button data-color="w" class="active">White</button>
+                            <button data-color="b">Black</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Move History -->
+                <div class="card history-card">
+                    <div class="card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <h2>Move History</h2>
+                        <span id="move-count" class="badge">0 Moves</span>
+                    </div>
+                    <div id="history-list" class="history-list custom-scrollbar">
+                        <div class="empty-history">No moves yet</div>
+                    </div>
+                </div>
+
+                <!-- Visibility Controls -->
+                <div class="card">
+                    <div class="visibility-group">
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-white" checked>
+                            <span class="slider"></span>
+                            <span class="toggle-label">Show White Pieces</span>
+                        </label>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-black" checked>
+                            <span class="slider"></span>
+                            <span class="toggle-label">Show Black Pieces</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="promotion-modal" class="modal">
+        <div class="modal-content">
+            <h3>Promote Pawn</h3>
+            <div class="promotion-choices" id="promotion-choices"></div>
+        </div>
+    </div>
+
+    <div id="game-over-modal" class="modal">
+        <div class="modal-content text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            <h2 id="game-over-title">Checkmate!</h2>
+            <p id="game-over-msg"></p>
+            <button id="play-again-btn" class="primary-btn">Play Again</button>
+        </div>
+    </div>
+<!-- An install button placed somewhere in your UI, hidden by default -->
+<button id="installBtn" style="display: none; background-color: #81b64c; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+    📥 Install Chess App
+</button>
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered!'))
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
