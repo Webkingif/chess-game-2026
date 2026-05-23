@@ -2,8 +2,7 @@ const CACHE_NAME = 'chess-v1';
 const ASSETS_TO_CACHE = [
     './',
     'index.html',
-    'style.css',
-    'app.js',
+    'script.js',
     'manifest.json',
     'icons/icon-192.png',
     'icons/icon-512.png'

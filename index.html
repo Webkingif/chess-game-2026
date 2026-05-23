@@ -1,24 +1,631 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grandmaster AI Chess - Vanilla</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <style>
+        :root {
+            --bg-main: #262421;
+            --bg-card: #312e2b;
+            --text-main: #bababa;
+            --text-muted: rgba(186, 186, 186, 0.4);
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --board-dark: #769656;
+            --board-light: #eeeed2;
+            --square-selected: rgba(255, 255, 0, 0.4);
+            --square-last-move: rgba(255, 255, 0, 0.2);
+            --square-check: rgba(239, 68, 68, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Board Styles */
+        .board-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1 / 1;
+            border: 4px solid var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .square {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .square.light {
+            background-color: var(--board-light);
+        }
+
+        .square.dark {
+            background-color: var(--board-dark);
+        }
+
+        .square.selected {
+            background-color: var(--square-selected);
+        }
+
+        .square.last-move {
+            background-color: var(--square-last-move);
+        }
+
+        .square.check {
+            background-color: var(--square-check);
+        }
+
+        .square .coord {
+            position: absolute;
+            font-size: 10px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .square.light .coord {
+            color: var(--board-dark);
+        }
+
+        .square.dark .coord {
+            color: var(--board-light);
+        }
+
+        .coord.rank {
+            top: 2px;
+            left: 2px;
+        }
+
+        .coord.file {
+            bottom: 2px;
+            right: 2px;
+        }
+
+        .piece {
+            width: 85%;
+            height: 85%;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+
+        .piece.hidden {
+            opacity: 0;
+        }
+
+        .legal-dot {
+            position: absolute;
+            width: 25%;
+            height: 25%;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            z-index: 5;
+        }
+
+        .legal-ring {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            z-index: 5;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 1.5rem;
+            background-color: var(--bg-card);
+            padding: 1rem;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .turn-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.white {
+            background-color: white;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+
+        .dot.black {
+            background-color: black;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .controls button {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .controls button:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .controls button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Sidebar & Cards */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge {
+            margin-left: auto;
+            font-size: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .settings-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .label {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+
+        .button-flex {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .button-grid button,
+        .button-flex button {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .button-grid button:hover,
+        .button-flex button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .button-grid button.active,
+        .button-flex button.active {
+            background-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+        }
+
+        .button-flex button.active {
+            background-color: white;
+            color: black;
+            border-color: white;
+        }
+
+        /* History List */
+        .history-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 300px;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .history-row {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr;
+            font-size: 0.875rem;
+            padding: 0.25rem 0;
+        }
+
+        .history-num {
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .history-move {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .history-move:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .empty-history {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-style: italic;
+            font-size: 0.875rem;
+        }
+
+        /* Toggles */
+        .visibility-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+
+        .toggle input {
+            display: none;
+        }
+
+        .slider {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            transition: 0.4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: #bababa;
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+
+        input:checked+.slider {
+            background-color: var(--accent);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+            background-color: white;
+        }
+
+        .toggle-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+            transition: color 0.2s;
+        }
+
+        .toggle:hover .toggle-label {
+            color: white;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            padding: 2rem;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-content h3 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+        }
+
+        .promotion-choices {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .promo-btn {
+            aspect-ratio: 1 / 1;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .promo-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .promo-btn img {
+            width: 70%;
+            height: 70%;
+            transition: transform 0.2s;
+        }
+
+        .promo-btn:hover img {
+            transform: scale(1.1);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        #game-over-title {
+            font-size: 2rem;
+            margin: 1rem 0 0.5rem;
+            color: white;
+        }
+
+        #game-over-msg {
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+        }
+
+        .primary-btn {
+            width: 100%;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .primary-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Thinking Overlay */
+        .thinking-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(1px);
+            z-index: 40;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .thinking-overlay.active {
+            display: flex;
+        }
+
+        .thinking-badge {
+            background-color: rgba(49, 46, 43, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .thinking-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+
+            100% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+        }
+
+        .thinking-text {
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
     <link rel="manifest" href="manifest.json">
+
 </head>
+
 <body>
     <div class="app-container">
         <!-- An install button placed somewhere in your UI, hidden by default -->
 
-        <button id="installBtn" style="display: none; background-color: #81b64c; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+        <button id="installBtn"
+            style="display: none; background-color: #81b64c; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
             📥 Click here to install Chess App
         </button>
         <div class="main-layout">
             <!-- Left Column: Board -->
             <div class="board-column">
                 <div id="board" class="board"></div>
-                
+
                 <!-- Game Status Bar -->
                 <div class="status-bar">
                     <div class="turn-indicator">
@@ -27,10 +634,20 @@
                     </div>
                     <div class="controls">
                         <button id="undo-btn" title="Undo Move">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 7v6h6" />
+                                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" />
+                            </svg>
                         </button>
                         <button id="reset-btn" title="New Game">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                <path d="M3 3v5h5" />
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -41,7 +658,13 @@
                 <!-- AI Settings -->
                 <div class="card">
                     <div class="card-header">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-10 10c0 4.99 3.3 9.21 8 10.61V16a2 2 0 0 0-2-2 4 4 0 0 1-4-4 4 4 0 0 1 4-4 2 2 0 0 0 2-2V2Z"/><path d="M12 2a10 10 0 0 1 10 10c0 4.99-3.3 9.21-8 10.61V16a2 2 0 0 1 2-2 4 4 0 0 0 4-4 4 4 0 0 0-4-4 2 2 0 0 1-2-2V2Z"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M12 2a10 10 0 0 0-10 10c0 4.99 3.3 9.21 8 10.61V16a2 2 0 0 0-2-2 4 4 0 0 1-4-4 4 4 0 0 1 4-4 2 2 0 0 0 2-2V2Z" />
+                            <path
+                                d="M12 2a10 10 0 0 1 10 10c0 4.99-3.3 9.21-8 10.61V16a2 2 0 0 1 2-2 4 4 0 0 0 4-4 4 4 0 0 0-4-4 2 2 0 0 1-2-2V2Z" />
+                        </svg>
                         <h2>Engine Settings</h2>
                     </div>
                     <div class="settings-group">
@@ -65,7 +688,11 @@
                 <!-- Move History -->
                 <div class="card history-card">
                     <div class="card-header">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
                         <h2>Move History</h2>
                         <span id="move-count" class="badge">0 Moves</span>
                     </div>
@@ -103,14 +730,22 @@
 
     <div id="game-over-modal" class="modal">
         <div class="modal-content text-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                <path d="M4 22h16" />
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+            </svg>
             <h2 id="game-over-title">Checkmate!</h2>
             <p id="game-over-msg"></p>
             <button id="play-again-btn" class="primary-btn">Play Again</button>
         </div>
     </div>
     <p>Created by Idowu Oluwafemi in 2026.
-        
+
     </p>
     <p>Linkedin: https://www.linkedin.com/in/femi-idowu-3472ab324</p>
     <script src="script.js"></script>
@@ -124,4 +759,5 @@
         }
     </script>
 </body>
+
 </html>
