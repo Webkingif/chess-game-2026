@@ -10,12 +10,12 @@ const MoveFlags = { NORMAL: 0, PAWN_PUSH: 1, BIG_PAWN: 2, CAPTURE: 4, EN_PASSANT
 const PIECE_VALUES = { [PieceType.PAWN]: 100, [PieceType.KNIGHT]: 320, [PieceType.BISHOP]: 330, [PieceType.ROOK]: 500, [PieceType.QUEEN]: 900, [PieceType.KING]: 20000 };
 
 const PST = {
-    [PieceType.PAWN]: [0,0,0,0,0,0,0,0, 50,50,50,50,50,50,50,50, 10,10,20,30,30,20,10,10, 5,5,10,25,25,10,5,5, 0,0,0,20,20,0,0,0, 5,-5,-10,0,0,-10,-5,5, 5,10,10,-20,-20,10,10,5, 0,0,0,0,0,0,0,0],
-    [PieceType.KNIGHT]: [-50,-40,-30,-30,-30,-30,-40,-50, -40,-20,0,0,0,0,-20,-40, -30,0,10,15,15,10,0,-30, -30,5,15,20,20,15,5,-30, -30,0,15,20,20,15,0,-30, -30,5,10,15,15,10,5,-30, -40,-20,0,5,5,0,-20,-40, -50,-40,-30,-30,-30,-30,-40,-50],
-    [PieceType.BISHOP]: [-20,-10,-10,-10,-10,-10,-10,-20, -10,0,0,0,0,0,0,-10, -10,0,5,10,10,5,0,-10, -10,5,5,10,10,5,5,-10, -10,0,10,10,10,10,0,-10, -10,10,10,10,10,10,10,-10, -10,5,0,0,0,0,5,-10, -20,-10,-10,-10,-10,-10,-10,-20],
-    [PieceType.ROOK]: [0,0,0,0,0,0,0,0, 5,10,10,10,10,10,10,5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, 0,0,0,5,5,0,0,0],
-    [PieceType.QUEEN]: [-20,-10,-10,-5,-5,-10,-10,-20, -10,0,0,0,0,0,0,-10, -10,0,5,5,5,5,0,-10, -5,0,5,5,5,5,0,-5, 0,0,5,5,5,5,0,-5, -10,5,5,5,5,5,0,-10, -10,0,5,0,0,0,0,-10, -20,-10,-10,-5,-5,-10,-10,-20],
-    [PieceType.KING]: [-30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30, -20,-30,-30,-40,-40,-30,-30,-20, -10,-20,-20,-20,-20,-20,-20,-10, 20,20,0,0,0,0,20,20, 20,30,10,0,0,10,30,20]
+    [PieceType.PAWN]: [0, 0, 0, 0, 0, 0, 0, 0, 50, 50, 50, 50, 50, 50, 50, 50, 10, 10, 20, 30, 30, 20, 10, 10, 5, 5, 10, 25, 25, 10, 5, 5, 0, 0, 0, 20, 20, 0, 0, 0, 5, -5, -10, 0, 0, -10, -5, 5, 5, 10, 10, -20, -20, 10, 10, 5, 0, 0, 0, 0, 0, 0, 0, 0],
+    [PieceType.KNIGHT]: [-50, -40, -30, -30, -30, -30, -40, -50, -40, -20, 0, 0, 0, 0, -20, -40, -30, 0, 10, 15, 15, 10, 0, -30, -30, 5, 15, 20, 20, 15, 5, -30, -30, 0, 15, 20, 20, 15, 0, -30, -30, 5, 10, 15, 15, 10, 5, -30, -40, -20, 0, 5, 5, 0, -20, -40, -50, -40, -30, -30, -30, -30, -40, -50],
+    [PieceType.BISHOP]: [-20, -10, -10, -10, -10, -10, -10, -20, -10, 0, 0, 0, 0, 0, 0, -10, -10, 0, 5, 10, 10, 5, 0, -10, -10, 5, 5, 10, 10, 5, 5, -10, -10, 0, 10, 10, 10, 10, 0, -10, -10, 10, 10, 10, 10, 10, 10, -10, -10, 5, 0, 0, 0, 0, 5, -10, -20, -10, -10, -10, -10, -10, -10, -20],
+    [PieceType.ROOK]: [0, 0, 0, 0, 0, 0, 0, 0, 5, 10, 10, 10, 10, 10, 10, 5, -5, 0, 0, 0, 0, 0, 0, -5, -5, 0, 0, 0, 0, 0, 0, -5, -5, 0, 0, 0, 0, 0, 0, -5, -5, 0, 0, 0, 0, 0, 0, -5, -5, 0, 0, 0, 0, 0, 0, -5, 0, 0, 0, 5, 5, 0, 0, 0],
+    [PieceType.QUEEN]: [-20, -10, -10, -5, -5, -10, -10, -20, -10, 0, 0, 0, 0, 0, 0, -10, -10, 0, 5, 5, 5, 5, 0, -10, -5, 0, 5, 5, 5, 5, 0, -5, 0, 0, 5, 5, 5, 5, 0, -5, -10, 5, 5, 5, 5, 5, 0, -10, -10, 0, 5, 0, 0, 0, 0, -10, -20, -10, -10, -5, -5, -10, -10, -20],
+    [PieceType.KING]: [-30, -40, -40, -50, -50, -40, -40, -30, -30, -40, -40, -50, -50, -40, -40, -30, -30, -40, -40, -50, -50, -40, -40, -30, -30, -40, -40, -50, -50, -40, -40, -30, -20, -30, -30, -40, -40, -30, -30, -20, -10, -20, -20, -20, -20, -20, -20, -10, 20, 20, 0, 0, 0, 0, 20, 20, 20, 30, 10, 0, 0, 10, 30, 20]
 };
 
 const PIECE_SVGS = {
@@ -40,10 +40,10 @@ const installBtn = document.getElementById('installBtn');
 window.addEventListener('beforeinstallprompt', (e) => {
     // 1. Prevent the default mini-infobar from appearing on mobile
     e.preventDefault();
-    
+
     // 2. Stash the event so it can be triggered later
     deferredPrompt = e;
-    
+
     // 3. Unhide your custom install button
     installBtn.style.display = 'block';
 });
@@ -159,7 +159,7 @@ class ChessEngine {
                 });
                 break;
             case PieceType.KNIGHT:
-                [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dr, dc]) => {
+                [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]].forEach(([dr, dc]) => {
                     const r = row + dr, c = col + dc;
                     if (r >= 0 && r < 8 && c >= 0 && c < 8) {
                         const target = r * 8 + c, targetPiece = this.board[target];
@@ -172,8 +172,8 @@ class ChessEngine {
             case PieceType.ROOK:
             case PieceType.QUEEN:
                 const dirs = [];
-                if (piece.type !== PieceType.ROOK) dirs.push([-1,-1],[-1,1],[1,-1],[1,1]);
-                if (piece.type !== PieceType.BISHOP) dirs.push([-1,0],[1,0],[0,-1],[0,1]);
+                if (piece.type !== PieceType.ROOK) dirs.push([-1, -1], [-1, 1], [1, -1], [1, 1]);
+                if (piece.type !== PieceType.BISHOP) dirs.push([-1, 0], [1, 0], [0, -1], [0, 1]);
                 dirs.forEach(([dr, dc]) => {
                     let r = row + dr, c = col + dc;
                     while (r >= 0 && r < 8 && c >= 0 && c < 8) {
@@ -188,7 +188,7 @@ class ChessEngine {
                 });
                 break;
             case PieceType.KING:
-                [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(([dr, dc]) => {
+                [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]].forEach(([dr, dc]) => {
                     const r = row + dr, c = col + dc;
                     if (r >= 0 && r < 8 && c >= 0 && c < 8) {
                         const target = r * 8 + c, targetPiece = this.board[target];
@@ -448,7 +448,7 @@ class ChessUI {
         this.undoBtn.onclick = () => { this.engine.undoMove(); this.engine.undoMove(); this.render(); };
         this.resetBtn.onclick = () => { this.engine.reset(); this.render(); };
         this.playAgainBtn.onclick = () => { this.gameOverModal.classList.remove('active'); this.engine.reset(); this.render(); };
-        
+
         this.difficultyBtns.forEach(btn => {
             btn.onclick = () => {
                 this.difficultyBtns.forEach(b => b.classList.remove('active'));
@@ -481,15 +481,15 @@ class ChessUI {
     renderBoard() {
         this.boardEl.innerHTML = '';
         const lastMove = this.engine.history[this.engine.history.length - 1];
-        
+
         for (let i = 0; i < 64; i++) {
             const row = Math.floor(i / 8), col = i % 8;
             const square = document.createElement('div');
             square.className = `square ${(row + col) % 2 === 1 ? 'dark' : 'light'}`;
-            
+
             if (this.selectedSquare === i) square.classList.add('selected');
             if (lastMove && (lastMove.from === i || lastMove.to === i)) square.classList.add('last-move');
-            
+
             const piece = this.engine.board[i];
             if (piece?.type === PieceType.KING && piece.color === this.engine.turn && this.engine.isCheck) {
                 square.classList.add('check');
@@ -516,10 +516,18 @@ class ChessUI {
             }
 
             // Piece
+
             if (piece) {
                 const img = document.createElement('img');
                 img.src = PIECE_SVGS[`${piece.color}-${piece.type}`];
                 img.className = 'piece';
+
+                // Dynamic, descriptive alt text for accessibility
+                const colorName = piece.color === Color.WHITE ? 'White' : 'Black';
+                const pieceNames = { 'p': 'Pawn', 'n': 'Knight', 'b': 'Bishop', 'r': 'Rook', 'q': 'Queen', 'k': 'King' };
+                const squareName = String.fromCharCode(97 + col) + (8 - row);
+                img.alt = `${colorName} ${pieceNames[piece.type]} on ${squareName}`;
+
                 if ((piece.color === Color.WHITE && !this.showWhitePieces) || (piece.color === Color.BLACK && !this.showBlackPieces)) {
                     img.classList.add('hidden');
                 }
@@ -532,18 +540,18 @@ class ChessUI {
     }
 
     renderStatus() {
-        this.statusTextEl.textContent = this.engine.isCheckmate ? 'Checkmate!' : 
-                                       this.engine.isStalemate ? 'Stalemate' : 
-                                       this.isThinking ? 'AI Thinking...' : 
-                                       `${this.engine.turn === Color.WHITE ? 'White' : 'Black'}'s Turn`;
-        
+        this.statusTextEl.textContent = this.engine.isCheckmate ? 'Checkmate!' :
+            this.engine.isStalemate ? 'Stalemate' :
+                this.isThinking ? 'AI Thinking...' :
+                    `${this.engine.turn === Color.WHITE ? 'White' : 'Black'}'s Turn`;
+
         this.turnDotEl.className = `dot ${this.engine.turn === Color.WHITE ? 'white' : 'black'}`;
         this.undoBtn.disabled = this.engine.history.length < 2 || this.isThinking;
 
         if (this.engine.isCheckmate || this.engine.isStalemate) {
             this.gameOverTitle.textContent = this.engine.isCheckmate ? 'Checkmate!' : 'Stalemate';
-            this.gameOverMsg.textContent = this.engine.isCheckmate ? 
-                `${this.engine.turn === Color.WHITE ? 'Black' : 'White'} wins the game.` : 
+            this.gameOverMsg.textContent = this.engine.isCheckmate ?
+                `${this.engine.turn === Color.WHITE ? 'Black' : 'White'} wins the game.` :
                 'The game ended in a draw.';
             this.gameOverModal.classList.add('active');
         }
@@ -552,7 +560,7 @@ class ChessUI {
     renderHistory() {
         this.historyListEl.innerHTML = '';
         this.moveCountEl.textContent = `${Math.ceil(this.engine.history.length / 2)} Moves`;
-        
+
         if (this.engine.history.length === 0) {
             this.historyListEl.innerHTML = '<div class="empty-history">No moves yet</div>';
             return;
@@ -561,7 +569,7 @@ class ChessUI {
         for (let i = 0; i < Math.ceil(this.engine.history.length / 2); i++) {
             const row = document.createElement('div');
             row.className = 'history-row';
-            
+
             const num = document.createElement('div');
             num.className = 'history-num'; num.textContent = `${i + 1}.`;
             row.appendChild(num);
