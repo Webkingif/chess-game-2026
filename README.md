@@ -1,4 +1,4 @@
-Grandmaster Chess AI
+# Grandmaster Chess AI
 
 Grandmaster Chess is a fully interactive, high-performance chess game built with vanilla JavaScript, HTML, and CSS. The project features a smart AI opponent powered by the Minimax algorithm with Alpha-Beta pruning for optimized decision-making.
 
@@ -12,7 +12,7 @@ The live link is https://webkingif.github.io/chess-game-2026/index.html
 
 ---
 
-🚀 Features
+# 🚀 Features
 
 - AI opponent using Minimax algorithm
 - Alpha-Beta pruning for optimized move calculation
@@ -23,7 +23,7 @@ The live link is https://webkingif.github.io/chess-game-2026/index.html
 
 ---
 
-🛠️ Tech Stack
+# 🛠️ Tech Stack
 
 - JavaScript (ES6+)
 - HTML5
@@ -33,7 +33,7 @@ The live link is https://webkingif.github.io/chess-game-2026/index.html
 
 ---
 
-🎯 Key Learnings
+# 🎯 Key Learnings
 
 - Game tree search algorithms and optimization techniques
 - Efficient state management for board games
