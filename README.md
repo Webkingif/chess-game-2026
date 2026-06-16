@@ -7,6 +7,9 @@ Designed as a Progressive Web App (PWA), the game can be installed on mobile and
 This project focuses on algorithmic thinking, game logic implementation, and delivering a smooth, responsive user experience.
 
 The live link is https://webkingif.github.io/chess-game-2026/index.html
+
+
+
 ---
 
 🚀 Features
